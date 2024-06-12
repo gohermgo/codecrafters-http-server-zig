@@ -19,22 +19,24 @@ const http = struct {
             fn reasonPhrase(self: Code) [:0]const u8 {
                 return comptime @tagName(self);
             }
-            fn toBytes(self: Code) []const u8 {
+            fn toBytes(self: Code) [:0]const u8 {
                 return comptime @intFromEnum(self) + '\n' + self.reasonPhrase();
             }
         };
         const Line = struct {
             version: Version,
             code: Code,
-            fn toBytes(self: Line) []const u8 {
+            fn toBytes(self: Line) [:0]const u8 {
                 return comptime self.version.toBytes() + '\n' + self.code.toBytes() + "\n\r\n";
             }
         };
     };
     const HeaderKind = enum {};
     const Header = union(HeaderKind) {
-        fn toBytes(self: Header) []const u8 {
-            const header_bytes = comptime switch (self) {};
+        fn toBytes(self: Header) [:0]const u8 {
+            const header_bytes = comptime switch (self) {
+                _ => "",
+            };
             return comptime header_bytes;
         }
     };
