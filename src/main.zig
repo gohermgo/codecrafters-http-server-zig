@@ -16,7 +16,7 @@ fn arrayConcatu8(slices: []const []const u8) std.mem.Allocator.Error![]const u8 
 const http = struct {
     const Version = enum {
         First,
-        fn toBytes(self: Version) std.mem.Allocator.Error![:0]const u8 {
+        fn toBytes(self: Version) std.mem.Allocator.Error![]const u8 {
             const start_bytes = "HTTP/";
             const version_bytes = comptime switch (self) {
                 Version.First => "1.1",
@@ -68,7 +68,7 @@ const http = struct {
                 }
                 header_bytes = try arrayConcatu8(&[_][]const u8{ header_bytes, "\r\n" });
             }
-            return self.status_line.toBytes() + header_bytes + self.body.?.toBytes();
+            return try self.status_line.toBytes() + header_bytes + self.body.?.toBytes();
         }
     };
 };
