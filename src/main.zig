@@ -2,6 +2,64 @@ const std = @import("std");
 // Uncomment this block to pass the first stage
 // const net = std.net;
 
+const http = struct {
+    const Version = enum {
+        First,
+        fn toBytes(self: Version) *const [8:0]u8 {
+            const start_bytes = "HTTP/";
+            const version_bytes = comptime switch (self) {
+                Version.First => "1.1",
+            };
+            return start_bytes + version_bytes;
+        }
+    };
+    const status = struct {
+        const Code = enum(u8) {
+            OK = 200,
+            fn reasonPhrase(self: Code) *const []u8 {
+                return comptime @tagName(self);
+            }
+            fn toBytes(self: Code) *const []u8 {
+                return comptime @intFromEnum(self) + '\n' + self.reasonPhrase();
+            }
+        };
+        const Line = struct {
+            version: Version,
+            code: Code,
+            fn toBytes(self: Line) *const []u8 {
+                return comptime self.version.toBytes() + '\n' + self.code.toBytes() + "\n\r\n";
+            }
+        };
+    };
+    const HeaderKind = enum {};
+    const Header = union(HeaderKind) {
+        fn toBytes(self: Header) *const []u8 {
+            const header_bytes = comptime switch (self) {};
+            return comptime header_bytes;
+        }
+    };
+    const ResponseBody = struct {
+        fn toBytes(self: ResponseBody) *const []u8 {
+            self;
+        }
+    };
+    const Response = struct {
+        status_line: status.Line,
+        headers: ?[]Header,
+        body: ?ResponseBody,
+        fn toBytes(self: Response) *const []u8 {
+            const header_bytes = comptime {
+                var bytes = "";
+                for (self.headers.?) |header| {
+                    bytes += header.toBytes();
+                }
+                bytes += "\r\n";
+            };
+            return comptime self.status_line.toBytes() + header_bytes + self.body.?.toBytes();
+        }
+    };
+};
+
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
 
@@ -17,4 +75,5 @@ pub fn main() !void {
     //
     _ = try listener.accept();
     try stdout.print("client connected!", .{});
+    _ = try listener.respond();
 }
