@@ -6,7 +6,7 @@ fn arrayConcat(comptime T: type, slices: []const []const T) std.mem.Allocator.Er
     return std.mem.concat(std.heap.FixedBufferAllocator, T, slices);
 }
 fn arrayConcatu8(slices: []const []const u8) std.mem.Allocator.Error![]const u8 {
-    return std.mem.concat(std.heap.GeneralPurposeAllocator(.{}){}, u8, slices);
+    return std.mem.concat(std.heap.GeneralPurposeAllocator(.{}), u8, slices);
 }
 
 const http = struct {
