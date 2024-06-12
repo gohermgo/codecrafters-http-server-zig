@@ -2,7 +2,7 @@ const std = @import("std");
 // Uncomment this block to pass the first stage
 // const net = std.net;
 
-const newline: [1]u8 = '\n';
+// const newline: [1]u8 = { intCast('\n') };
 var buffer: [2048]u8 = undefined;
 var fba = std.heap.FixedBufferAllocator.init(&buffer);
 const allocator = fba.allocator();
@@ -32,14 +32,14 @@ const http = struct {
                 return comptime @tagName(self);
             }
             fn toBytes(self: Code) std.mem.Allocator.Error![:0]const u8 {
-                return arrayConcatu8(&[_][]const u8{ @intFromEnum(self), newline, self.reasonPhrase() });
+                return arrayConcatu8(&[_][]const u8{ @intFromEnum(self), []const u8{'\n'}, self.reasonPhrase() });
             }
         };
         const Line = struct {
             version: Version,
             code: Code,
             fn toBytes(self: Line) std.mem.Allocator.Error![:0]const u8 {
-                return arrayConcatu8(&[_][]const u8{ try self.version.toBytes(), newline, try self.code.toBytes(), "\n\r\n" });
+                return arrayConcatu8(&[_][]const u8{ try self.version.toBytes(), []const u8{'\n'}, try self.code.toBytes(), "\n\r\n" });
             }
         };
     };
