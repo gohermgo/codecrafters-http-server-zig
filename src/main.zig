@@ -60,9 +60,9 @@ const http = struct {
             var header_bytes: []const u8 = "";
             if (self.headers) |headers| {
                 for (headers) |header| {
-                    header_bytes = try arrayConcatu8(&[_][]const u8{ bytes, header.toBytes() });
+                    header_bytes = try arrayConcatu8(&[_][]const u8{ header_bytes, header.toBytes() });
                 }
-                header_bytes = try arrayConcatu8(&[_][]const u8{ bytes, "\r\n" });
+                header_bytes = try arrayConcatu8(&[_][]const u8{ header_bytes, "\r\n" });
             }
             return comptime self.status_line.toBytes() + header_bytes + self.body.?.toBytes();
         }
