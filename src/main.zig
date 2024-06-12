@@ -2,11 +2,15 @@ const std = @import("std");
 // Uncomment this block to pass the first stage
 // const net = std.net;
 
+var buffer: [2048]u8 = undefined;
+var fba = std.heap.FixedBufferAllocator.init(&buffer);
+const allocator = fba.allocator();
+
 fn arrayConcat(comptime T: type, slices: []const []const T) std.mem.Allocator.Error![]const T {
-    return std.mem.concat(std.heap.FixedBufferAllocator, T, slices);
+    return std.mem.concat(allocator, T, slices);
 }
 fn arrayConcatu8(slices: []const []const u8) std.mem.Allocator.Error![]const u8 {
-    return std.mem.concat(std.heap.GeneralPurposeAllocator(.{}).allocator(), u8, slices);
+    return std.mem.concat(allocator, u8, slices);
 }
 
 const http = struct {
@@ -64,7 +68,7 @@ const http = struct {
                 }
                 header_bytes = try arrayConcatu8(&[_][]const u8{ header_bytes, "\r\n" });
             }
-            return comptime self.status_line.toBytes() + header_bytes + self.body.?.toBytes();
+            return self.status_line.toBytes() + header_bytes + self.body.?.toBytes();
         }
     };
 };
