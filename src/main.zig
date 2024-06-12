@@ -48,10 +48,10 @@ const http = struct {
         headers: ?[]Header,
         body: ?ResponseBody,
         fn toBytes(self: Response) []const u8 {
-            const header_bytes = if (comptime self.headers) |headers| {
+            const header_bytes = if (self.headers) |headers| {
                 var bytes = "";
-                inline for (headers) |header| {
-                    bytes += comptime header.toBytes();
+                for (headers) |header| {
+                    bytes += header.toBytes();
                 }
                 bytes += "\r\n";
             } else {
