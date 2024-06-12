@@ -63,7 +63,7 @@ const http = struct {
                     header_bytes = try arrayConcatu8(&[_][]const u8{ bytes, header.toBytes() });
                 }
                 header_bytes = try arrayConcatu8(&[_][]const u8{ bytes, "\r\n" });
-            };
+            }
             return comptime self.status_line.toBytes() + header_bytes + self.body.?.toBytes();
         }
     };
