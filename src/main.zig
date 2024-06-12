@@ -56,7 +56,7 @@ const http = struct {
         status_line: status.Line,
         headers: ?[]Header,
         body: ?ResponseBody,
-        fn toBytes(self: Response) []const u8 {
+        fn toBytes(self: Response) std.mem.Allocator.Error![]const u8 {
             const header_bytes = if (self.headers) |headers| {
                 var bytes = "";
                 for (headers) |header| {
