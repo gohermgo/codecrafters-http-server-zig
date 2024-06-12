@@ -32,7 +32,10 @@ const http = struct {
                 return @tagName(self);
             }
             fn toBytes(self: Code) std.mem.Allocator.Error![]const u8 {
-                return arrayConcatu8(&[_][]const u8{ @intFromEnum(self), "\n", self.reasonPhrase() });
+                const newline: []const u8 = {
+                    '\n';
+                };
+                return arrayConcatu8(&[_][]const u8{ @intFromEnum(self), newline, self.reasonPhrase() });
             }
         };
         const Line = struct {
