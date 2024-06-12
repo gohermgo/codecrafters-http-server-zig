@@ -32,14 +32,14 @@ const http = struct {
                 return comptime @tagName(self);
             }
             fn toBytes(self: Code) std.mem.Allocator.Error![:0]const u8 {
-                return arrayConcatu8(&[_][]const u8{ @intFromEnum(self), []const u8{'\n'}, self.reasonPhrase() });
+                return arrayConcatu8(&[_][]const u8{ @intFromEnum(self), "\n", self.reasonPhrase() });
             }
         };
         const Line = struct {
             version: Version,
             code: Code,
             fn toBytes(self: Line) std.mem.Allocator.Error![:0]const u8 {
-                return arrayConcatu8(&[_][]const u8{ try self.version.toBytes(), []const u8{'\n'}, try self.code.toBytes(), "\n\r\n" });
+                return arrayConcatu8(&[_][]const u8{ try self.version.toBytes(), "\n", try self.code.toBytes(), "\n\r\n" });
             }
         };
     };
