@@ -53,9 +53,9 @@ const http = struct {
             const header_bytes = if (self.headers) |headers| {
                 var bytes = "";
                 for (headers) |header| {
-                    bytes = try std.mem.concat(std.mem.Allocator, u8, &[_][]const u8{ bytes, header.toBytes() });
+                    bytes = try std.mem.concat(std.heap.FixedBufferAllocator, u8, &[_][]const u8{ bytes, header.toBytes() });
                 }
-                try std.mem.concat(std.mem.Allocator, u8, &[_][]const u8{ bytes, "\r\n" });
+                try std.mem.concat(std.heap.FixedBufferAllocator, u8, &[_][]const u8{ bytes, "\r\n" });
             } else {
                 "";
             };
