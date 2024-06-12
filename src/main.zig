@@ -75,5 +75,11 @@ pub fn main() !void {
     //
     _ = try listener.accept();
     try stdout.print("client connected!", .{});
-    _ = try listener.respond();
+    var stream = listener.stream;
+    const status_line = http.status.Line{
+        .version = http.Version.First,
+        .code = http.status.Code.OK,
+    };
+    const response = http.Response{ .status_line = status_line, .headers = undefined, .body = undefined };
+    _ = try stream.writeAll(response.toBytes());
 }
