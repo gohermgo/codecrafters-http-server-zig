@@ -29,16 +29,16 @@ const http = struct {
         const Code = enum(u8) {
             OK = 200,
             fn reasonPhrase(self: Code) [:0]const u8 {
-                return comptime @tagName(self);
+                return @tagName(self);
             }
-            fn toBytes(self: Code) std.mem.Allocator.Error![:0]const u8 {
+            fn toBytes(self: Code) std.mem.Allocator.Error![]const u8 {
                 return arrayConcatu8(&[_][]const u8{ @intFromEnum(self), "\n", self.reasonPhrase() });
             }
         };
         const Line = struct {
             version: Version,
             code: Code,
-            fn toBytes(self: Line) std.mem.Allocator.Error![:0]const u8 {
+            fn toBytes(self: Line) std.mem.Allocator.Error![]const u8 {
                 return arrayConcatu8(&[_][]const u8{ try self.version.toBytes(), "\n", try self.code.toBytes(), "\n\r\n" });
             }
         };
@@ -62,6 +62,7 @@ const http = struct {
         headers: ?[]Header,
         body: ?ResponseBody,
         fn toBytes(self: Response) std.mem.Allocator.Error![]const u8 {
+            const status_line_bytes = try self.status_line.toBytes();
             var header_bytes: []const u8 = "";
             if (self.headers) |headers| {
                 for (headers) |header| {
@@ -69,7 +70,8 @@ const http = struct {
                 }
                 header_bytes = try arrayConcatu8(&[_][]const u8{ header_bytes, "\r\n" });
             }
-            return try self.status_line.toBytes() + header_bytes + self.body.?.toBytes();
+            const body_bytes = self.body.?.toBytes();
+            return try arrayConcatu8(&[_][]const u8{ status_line_bytes, header_bytes, body_bytes });
         }
     };
 };
