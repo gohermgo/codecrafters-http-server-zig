@@ -57,15 +57,12 @@ const http = struct {
         headers: ?[]Header,
         body: ?ResponseBody,
         fn toBytes(self: Response) std.mem.Allocator.Error![]const u8 {
-            const header_bytes = if (self.headers) |headers| {
-                var bytes: []const u8 = "";
+            var header_bytes: []const u8 = "";
+            if (self.headers) |headers| {
                 for (headers) |header| {
-                    bytes = try arrayConcatu8(&[_][]const u8{ bytes, header.toBytes() });
+                    header_bytes = try arrayConcatu8(&[_][]const u8{ bytes, header.toBytes() });
                 }
-                bytes = try arrayConcatu8(&[_][]const u8{ bytes, "\r\n" });
-                return bytes;
-            } else {
-                return []const u8;
+                header_bytes = try arrayConcatu8(&[_][]const u8{ bytes, "\r\n" });
             };
             return comptime self.status_line.toBytes() + header_bytes + self.body.?.toBytes();
         }
