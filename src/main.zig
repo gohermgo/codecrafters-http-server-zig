@@ -40,11 +40,11 @@ const http = struct {
     };
     const HeaderKind = enum {};
     const Header = union(HeaderKind) {
-        fn toBytes(self: Header) [:0]const u8 {
-            const header_bytes = comptime switch (self) {
-                _ => "",
-            };
-            return comptime header_bytes;
+        fn toBytes(_: Header) [:0]const u8 {
+            // const header_bytes = comptime switch (self) {
+            //     _ => "",
+            // };
+            return comptime "";
         }
     };
     const ResponseBody = struct {
@@ -60,7 +60,7 @@ const http = struct {
             const header_bytes = if (self.headers) |headers| {
                 var bytes = "";
                 for (headers) |header| {
-                    bytes = arrayConcatu8(&[_][]const u8{ bytes, header.toBytes() });
+                    bytes = try arrayConcatu8(&[_][]const u8{ bytes, header.toBytes() });
                 }
                 try arrayConcatu8(&[_][]const u8{ bytes, "\r\n" });
             } else {
