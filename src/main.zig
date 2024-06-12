@@ -48,9 +48,9 @@ const http = struct {
         headers: ?[]Header,
         body: ?ResponseBody,
         fn toBytes(self: Response) []const u8 {
-            const header_bytes = comptime if (self.headers) |headers| {
+            const header_bytes = if (self.headers) |headers| {
                 var bytes = "";
-                for (headers) |header| {
+                inline for (headers) |header| {
                     bytes += header.toBytes();
                 }
                 bytes += "\r\n";
