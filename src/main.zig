@@ -64,7 +64,7 @@ const http = struct {
                 }
                 return try arrayConcatu8(&[_][]const u8{ bytes, "\r\n" });
             } else {
-                return []const u8{};
+                return []const u8;
             };
             return comptime self.status_line.toBytes() + header_bytes + self.body.?.toBytes();
         }
