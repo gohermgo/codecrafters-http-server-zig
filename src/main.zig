@@ -51,7 +51,7 @@ const http = struct {
             const header_bytes = if (self.headers) |headers| {
                 var bytes = "";
                 inline for (headers) |header| {
-                    bytes += header.toBytes();
+                    bytes += comptime header.toBytes();
                 }
                 bytes += "\r\n";
             } else {
