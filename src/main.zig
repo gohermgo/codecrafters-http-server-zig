@@ -92,5 +92,6 @@ pub fn main() !void {
         .code = http.status.Code.OK,
     };
     const response = http.Response{ .status_line = status_line, .headers = undefined, .body = undefined };
-    _ = try stream.writeAll(response.toBytes());
+    const response_bytes = try response.toBytes();
+    _ = try stream.writeAll(response_bytes);
 }
