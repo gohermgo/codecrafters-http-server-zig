@@ -2,15 +2,22 @@ const std = @import("std");
 // Uncomment this block to pass the first stage
 // const net = std.net;
 
+fn arrayConcat(comptime T: type, slices: []const []const T) std.mem.Allocator.Error![]const T {
+    return std.mem.concat(std.heap.FixedBufferAllocator, T, slices);
+}
+fn arrayConcatu8(slices: []const []const u8) std.mem.Allocator.Error![]const u8 {
+    return std.mem.concat(std.heap.FixedBufferAllocator, u8, slices);
+}
+
 const http = struct {
     const Version = enum {
         First,
-        fn toBytes(self: Version) [:0]const u8 {
+        fn toBytes(self: Version) std.mem.Allocator.Error![:0]const u8 {
             const start_bytes = "HTTP/";
             const version_bytes = comptime switch (self) {
                 Version.First => "1.1",
             };
-            return start_bytes + version_bytes;
+            return arrayConcatu8(&[_][]const u8{ start_bytes, version_bytes });
         }
     };
     const status = struct {
@@ -19,15 +26,15 @@ const http = struct {
             fn reasonPhrase(self: Code) [:0]const u8 {
                 return comptime @tagName(self);
             }
-            fn toBytes(self: Code) [:0]const u8 {
-                return comptime @intFromEnum(self) + '\n' + self.reasonPhrase();
+            fn toBytes(self: Code) std.mem.Allocator.Error![:0]const u8 {
+                return arrayConcatu8(&[_][]const u8{ @intFromEnum(self), '\n', self.reasonPhrase() });
             }
         };
         const Line = struct {
             version: Version,
             code: Code,
-            fn toBytes(self: Line) [:0]const u8 {
-                return comptime self.version.toBytes() + '\n' + self.code.toBytes() + "\n\r\n";
+            fn toBytes(self: Line) std.mem.Allocator.Error![:0]const u8 {
+                return arrayConcatu8(&[_][]const u8{ try self.version.toBytes(), '\n', try self.code.toBytes(), "\n\r\n" });
             }
         };
     };
@@ -53,9 +60,9 @@ const http = struct {
             const header_bytes = if (self.headers) |headers| {
                 var bytes = "";
                 for (headers) |header| {
-                    bytes = try std.mem.concat(std.heap.FixedBufferAllocator, u8, &[_][]const u8{ bytes, header.toBytes() });
+                    bytes = arrayConcatu8(&[_][]const u8{ bytes, header.toBytes() });
                 }
-                try std.mem.concat(std.heap.FixedBufferAllocator, u8, &[_][]const u8{ bytes, "\r\n" });
+                try arrayConcatu8(&[_][]const u8{ bytes, "\r\n" });
             } else {
                 "";
             };
