@@ -58,7 +58,7 @@ const http = struct {
         body: ?ResponseBody,
         fn toBytes(self: Response) std.mem.Allocator.Error![]const u8 {
             const header_bytes = if (self.headers) |headers| {
-                var bytes = "";
+                var bytes: []const u8 = "";
                 for (headers) |header| {
                     bytes = try arrayConcatu8(&[_][]const u8{ bytes, header.toBytes() });
                 }
