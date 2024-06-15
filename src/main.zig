@@ -1,79 +1,11 @@
 const std = @import("std");
+const http = @import("http.zig");
 // Uncomment this block to pass the first stage
 // const net = std.net;
 
 var buffer: [2048]u8 = undefined;
 var fba = std.heap.FixedBufferAllocator.init(&buffer);
-const allocator = fba.allocator();
-
-fn arrayConcat(comptime T: type, slices: []const []const T) std.mem.Allocator.Error![]const T {
-    return std.mem.concat(allocator, T, slices);
-}
-fn arrayConcatu8(slices: []const []const u8) std.mem.Allocator.Error![]const u8 {
-    return std.mem.concat(allocator, u8, slices);
-}
-
-const http = struct {
-    const Version = enum {
-        First,
-        fn toBytes(self: Version) std.mem.Allocator.Error![]const u8 {
-            const start_bytes = "HTTP/";
-            const version_bytes = comptime switch (self) {
-                Version.First => "1.1",
-            };
-            return arrayConcatu8(&[_][]const u8{ start_bytes, version_bytes });
-        }
-    };
-    const status = struct {
-        const Code = enum(u8) {
-            OK = 200,
-            fn reasonPhrase(self: Code) [:0]const u8 {
-                return @tagName(self);
-            }
-            fn toBytes(self: Code) std.mem.Allocator.Error![]const u8 {
-                return arrayConcatu8(&[_][]const u8{ @intFromEnum(self), [_]u8{'\n'}, self.reasonPhrase() });
-            }
-        };
-        const Line = struct {
-            version: Version,
-            code: Code,
-            fn toBytes(self: Line) std.mem.Allocator.Error![]const u8 {
-                return arrayConcatu8(&[_][]const u8{ try self.version.toBytes(), "\n", try self.code.toBytes(), "\n\r\n" });
-            }
-        };
-    };
-    const HeaderKind = enum {};
-    const Header = union(HeaderKind) {
-        fn toBytes(_: Header) [:0]const u8 {
-            // const header_bytes = comptime switch (self) {
-            //     _ => "",
-            // };
-            return comptime "";
-        }
-    };
-    const ResponseBody = struct {
-        fn toBytes(_: ResponseBody) []const u8 {
-            return comptime "";
-        }
-    };
-    const Response = struct {
-        status_line: status.Line,
-        headers: ?[]Header,
-        body: ?ResponseBody,
-        fn toBytes(self: Response) std.mem.Allocator.Error![]const u8 {
-            const status_line_bytes = try self.status_line.toBytes();
-            var header_bytes: []const u8 = "";
-            if (self.headers) |headers| {
-                for (headers) |header| {
-                    header_bytes = try arrayConcatu8(&[_][]const u8{ header_bytes, header.toBytes() });
-                }
-                header_bytes = try arrayConcatu8(&[_][]const u8{ header_bytes, "\r\n" });
-            }
-            const body_bytes = self.body.?.toBytes();
-            return try arrayConcatu8(&[_][]const u8{ status_line_bytes, header_bytes, body_bytes });
-        }
-    };
-};
+pub const allocator = fba.allocator();
 
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
@@ -88,14 +20,10 @@ pub fn main() !void {
     });
     defer listener.deinit();
     //
-    _ = try listener.accept();
+    const connection = try listener.accept();
     try stdout.print("client connected!", .{});
-    var stream = listener.stream;
-    const status_line = http.status.Line{
-        .version = http.Version.First,
-        .code = http.status.Code.OK,
-    };
-    const response = http.Response{ .status_line = status_line, .headers = undefined, .body = undefined };
-    const response_bytes = try response.toBytes();
+    const stream = connection.stream;
+    const response = http.Response{ .status_line = http.StatusLine{ .version = http.Version.First, .code = http.StatusCode.Ok }, .headers = undefined, .body = undefined };
+    const response_bytes = try response.toString();
     _ = try stream.writeAll(response_bytes);
 }
